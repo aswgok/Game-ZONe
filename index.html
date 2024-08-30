@@ -13,18 +13,18 @@
         }
         #gameCanvas {
             position: relative;
-            width: 800px;
-            height: 600px;
+            width: 370px;
+            height: 700px;
             margin: 0 auto;
             background-color: #444;
             border: 2px solid #000;
-            padding-top: 150px;
+            padding-top: 300px;
         }
         .car {
             position: absolute;
             width: 50px;
             height: 100px;
-            background-color: #FF0000;
+            background-color: #444;
         }
         .obstacle, .powerUp {
             position: absolute;
@@ -58,7 +58,9 @@
 <body>
     <div id="gameCanvas">
         <div id="score">Score: 0</div>
-        <div id="car" class="car"></div>
+        <div id="car" class="car" style="background-image: url(car.png);"> 
+            <img src="car.png" width="100"> 
+        </div>
         <div id="gameOverMessage">Game Over!</div>
     </div>
 
