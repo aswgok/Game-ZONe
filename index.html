@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Car Race Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #87CEEB;
+            font-family: Arial, sans-serif;
+        }
+        #gameCanvas {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            margin: 0 auto;
+            background-color: #444;
+            border: 2px solid #000;
+            padding-top: 150px;
+        }
+        .car {
+            position: absolute;
+            width: 50px;
+            height: 100px;
+            background-color: #FF0000;
+        }
+        .obstacle, .powerUp {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+        }
+        .obstacle {
+            background-color: #000;
+        }
+        .powerUp {
+            background-color: #00FF00;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 24px;
+        }
+        #gameOverMessage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 36px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameCanvas">
+        <div id="score">Score: 0</div>
+        <div id="car" class="car"></div>
+        <div id="gameOverMessage">Game Over!</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const car = document.getElementById('car');
+        const scoreDisplay = document.getElementById('score');
+        const gameOverMessage = document.getElementById('gameOverMessage');
+
+        const canvasWidth = canvas.offsetWidth;
+        const canvasHeight = canvas.offsetHeight;
+        const carWidth = car.offsetWidth;
+        const carHeight = car.offsetHeight;
+
+        let carX = (canvasWidth - carWidth) / 2;
+        let carY = canvasHeight - carHeight - 10;
+        let score = 0;
+        let multiplier = 1;
+        let obstacles = [];
+        let powerUps = [];
+        let gameInterval;
+
+        function startGame() {
+            document.addEventListener('keydown', moveCar);
+            document.addEventListener('mousemove', followMouse);
+            gameInterval = setInterval(updateGame, 20);
+            spawnObstacles(3); // Spawn initial obstacles
+            spawnPowerUps(2); // Spawn initial power-ups
+        }
+
+        function moveCar(event) {
+            if (event.key === 'ArrowLeft') {
+                carX = Math.max(0, carX - 10);
+            } else if (event.key === 'ArrowRight') {
+                carX = Math.min(canvasWidth - carWidth, carX + 10);
+            }
+            car.style.left = `${carX}px`;
+        }
+
+        function followMouse(event) {
+            const mouseX = event.clientX - canvas.offsetLeft;
+            carX = Math.max(0, Math.min(canvasWidth - carWidth, mouseX - carWidth / 2));
+            car.style.left = `${carX}px`;
+        }
+
+        function spawnObstacles(count) {
+            for (let i = 0; i < count; i++) {
+                const obstacle = document.createElement('div');
+                obstacle.className = 'obstacle';
+                obstacle.style.top = `${Math.random() * -canvasHeight}px`;
+                obstacle.style.left = `${Math.random() * (canvasWidth - 50)}px`;
+                canvas.appendChild(obstacle);
+                obstacles.push(obstacle);
+            }
+        }
+
+        function spawnPowerUps(count) {
+            for (let i = 0; i < count; i++) {
+                const powerUp = document.createElement('div');
+                powerUp.className = 'powerUp';
+                powerUp.style.top = `${Math.random() * -canvasHeight}px`;
+                powerUp.style.left = `${Math.random() * (canvasWidth - 50)}px`;
+                canvas.appendChild(powerUp);
+                powerUps.push(powerUp);
+            }
+        }
+
+        function updateGame() {
+            obstacles.forEach(obstacle => {
+                obstacle.style.top = `${parseFloat(obstacle.style.top) + 5}px`;
+                if (parseFloat(obstacle.style.top) > canvasHeight) {
+                    obstacle.style.top = `${Math.random() * -canvasHeight}px`;
+                    obstacle.style.left = `${Math.random() * (canvasWidth - 50)}px`;
+                    score += multiplier;
+                    scoreDisplay.textContent = `Score: ${score}`;
+                }
+                if (checkCollision(car, obstacle)) {
+                    endGame();
+                }
+            });
+
+            powerUps.forEach(powerUp => {
+                powerUp.style.top = `${parseFloat(powerUp.style.top) + 5}px`;
+                if (parseFloat(powerUp.style.top) > canvasHeight) {
+                    powerUp.style.top = `${Math.random() * -canvasHeight}px`;
+                    powerUp.style.left = `${Math.random() * (canvasWidth - 50)}px`;
+                }
+                if (checkCollision(car, powerUp)) {
+                    multiplier++;
+                    powerUp.remove();
+                    powerUps = powerUps.filter(p => p !== powerUp);
+                }
+            });
+        }
+
+        function checkCollision(obj1, obj2) {
+            const rect1 = obj1.getBoundingClientRect();
+            const rect2 = obj2.getBoundingClientRect();
+            return !(rect1.right < rect2.left || 
+                     rect1.left > rect2.right || 
+                     rect1.bottom < rect2.top || 
+                     rect1.top > rect2.bottom);
+        }
+
+        function endGame() {
+            clearInterval(gameInterval);
+            document.removeEventListener('keydown', moveCar);
+            document.removeEventListener('mousemove', followMouse);
+            gameOverMessage.textContent = `Game Over! Final Score: ${score}`;
+            gameOverMessage.style.display = 'block';
+        }
+
+        startGame();
+    </script>
+</body>
+</html>
